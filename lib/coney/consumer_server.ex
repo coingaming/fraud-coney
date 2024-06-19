@@ -3,6 +3,8 @@ defmodule Coney.ConsumerServer do
 
   alias Coney.{ConnectionServer, ConsumerExecutor, ExecutionTask}
 
+  require Logger
+
   def start_link([consumer, chan]) do
     GenServer.start_link(__MODULE__, [consumer, chan])
   end
@@ -49,7 +51,8 @@ defmodule Coney.ConsumerServer do
   end
 
   # Received if the task terminate abnormally
-  def handle_info({:DOWN, ref, _, _, _reason}, state) do
+  def handle_info({:DOWN, ref, _, _, reason}, state) do
+    Logger.info("[#{__MODULE__}] Error processing message with reason: #{inspect(reason)}")
     {task, state} = pop_in(state.tasks[ref])
     # Reject message
     reject(task)
